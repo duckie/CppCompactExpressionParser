@@ -49,7 +49,7 @@ struct Unit { ExpressionVar value; };
 struct FunctionCall { typename Function::FuncPtr func; std::vector<ExpressionVar> units; };
 }
 
-namespace CEP = CompactExpressionParser ;
+namespace { namespace CEP = CompactExpressionParser ; }
 BOOST_FUSION_ADAPT_STRUCT( CEP::Unit, (CEP::ExpressionVar, value))
 BOOST_FUSION_ADAPT_STRUCT( CEP::FunctionCall, (typename CEP::Function::FuncPtr, func) (std::vector<CEP::ExpressionVar>, units))
 BOOST_FUSION_ADAPT_STRUCT( CEP::Operation<CEP::add>, (CEP::ExpressionVar, opLeft) (CEP::ExpressionVar, opRight))
