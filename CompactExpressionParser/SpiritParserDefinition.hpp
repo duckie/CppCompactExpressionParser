@@ -46,12 +46,12 @@ typedef boost::variant< double,
 
 template<typename T> struct Operation { ExpressionVar opLeft; ExpressionVar opRight; };
 struct Unit { ExpressionVar value; };
-struct FunctionCall { typename Function::FuncPtr func; std::vector<ExpressionVar> units; };
+struct FunctionCall { Function::FuncPtr func; std::vector<ExpressionVar> units; };
 }
 
 namespace { namespace CEP = CompactExpressionParser ; }
 BOOST_FUSION_ADAPT_STRUCT( CEP::Unit, (CEP::ExpressionVar, value))
-BOOST_FUSION_ADAPT_STRUCT( CEP::FunctionCall, (typename CEP::Function::FuncPtr, func) (std::vector<CEP::ExpressionVar>, units))
+BOOST_FUSION_ADAPT_STRUCT( CEP::FunctionCall, (CEP::Function::FuncPtr, func) (std::vector<CEP::ExpressionVar>, units))
 BOOST_FUSION_ADAPT_STRUCT( CEP::Operation<CEP::add>, (CEP::ExpressionVar, opLeft) (CEP::ExpressionVar, opRight))
 BOOST_FUSION_ADAPT_STRUCT( CEP::Operation<CEP::sub>, (CEP::ExpressionVar, opLeft) (CEP::ExpressionVar, opRight))
 BOOST_FUSION_ADAPT_STRUCT( CEP::Operation<CEP::mult>, (CEP::ExpressionVar, opLeft) (CEP::ExpressionVar, opRight))

@@ -20,7 +20,7 @@ struct Pi : CompactExpressionParser::Function
 {
 	virtual double operator()(const std::vector<double> args)
 	{
-		static double pi = std::atan2(0,-1);
+		static double pi = std::atan2(0.,-1.);
 		return pi;
 	}
 };

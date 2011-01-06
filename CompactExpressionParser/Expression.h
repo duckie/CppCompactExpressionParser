@@ -30,7 +30,7 @@ public:
 	bool compile(const std::string& iExpression);
 	double eval();
 	double operator() ();
-	void register_user_function(const std::string& iName, typename Function::FuncPtr iFunc);
+	void register_user_function(const std::string& iName, Function::FuncPtr iFunc);
 
 private:
 	boost::shared_ptr< ExpGrammar<std::string::const_iterator> > m_grammar;
