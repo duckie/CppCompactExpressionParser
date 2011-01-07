@@ -19,16 +19,16 @@
 
 struct Pi
 {
-	double operator()(const std::vector<double> args)
+	double operator()(const std::vector<double>& args)
 	{
 		static double pi = std::atan2(0.,-1.);
 		return pi;
 	}
 };
 
-struct Cosinus { double operator()(const std::vector<double> args) { return std::cos(args[0]); } };
-struct Sinus { double operator()(const std::vector<double> args) { return std::sin(args[0]); } };
-struct Arctan2 { double operator()(const std::vector<double> args) { return std::atan2(args[0],args[1]); } };
+struct Cosinus { double operator()(const std::vector<double>& args) { return std::cos(args[0]); } };
+struct Sinus { double operator()(const std::vector<double>& args) { return std::sin(args[0]); } };
+struct Arctan2 { double operator()(const std::vector<double>& args) { return std::atan2(args[0],args[1]); } };
 
 // Unleash the power of spirit : see the use of UserArg below
 struct UserArg
@@ -39,7 +39,7 @@ struct UserArg
 	UserArg(const UserArg& iArg) : m_value(iArg.m_value) {}
 	UserArg& operator=(const UserArg& iArg) { m_value = iArg.m_value; return *this; }
 	UserArg& operator=(const double& iValue) { m_value = iValue; return *this; }
-	double operator()(const std::vector<double> args) { return m_value; }
+	double operator()(const std::vector<double>& args) { return m_value; }
 };
 
 // Some convenient utilities for the main loop

@@ -14,7 +14,7 @@
 
 namespace CompactExpressionParser
 {
-typedef boost::function< double (std::vector<double>) > UserFunctionType;
+typedef boost::function< double (const std::vector<double>&) > UserFunctionType;
 }
 
 #endif /* CEP_INTERFACES_H_ */
