@@ -10,17 +10,11 @@
 #define CEP_INTERFACES_H_
 
 #include <vector>
-#include <boost/shared_ptr.hpp>
+#include <boost/function.hpp>
 
 namespace CompactExpressionParser
 {
-
-struct Function
-{
-	typedef boost::shared_ptr<Function> FuncPtr;
-	virtual double operator()(const std::vector<double> iArgs) = 0;
-};
-
+typedef boost::function< double (std::vector<double>) > UserFunctionType;
 }
 
 #endif /* CEP_INTERFACES_H_ */

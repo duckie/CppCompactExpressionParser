@@ -11,55 +11,35 @@
 #include <CompactExpressionParser/Expression.h>
 #include <boost/format.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/ref.hpp>
 
 #define add_example(A) cep_add_example(A);
 
 // Here are the definitions of user functions that will be used later
 
-struct Pi : CompactExpressionParser::Function
+struct Pi
 {
-	virtual double operator()(const std::vector<double> args)
+	double operator()(const std::vector<double> args)
 	{
 		static double pi = std::atan2(0.,-1.);
 		return pi;
 	}
 };
 
-struct Cosinus : CompactExpressionParser::Function
-{
-	virtual double operator()(const std::vector<double> args)
-	{
-		return std::cos(args[0]);
-	}
-};
-
-struct Sinus : CompactExpressionParser::Function
-{
-	virtual double operator()(const std::vector<double> args)
-	{
-		return std::sin(args[0]);
-	}
-};
-
-struct Arctan2 : CompactExpressionParser::Function
-{
-	virtual double operator()(const std::vector<double> args)
-	{
-		return std::atan2(args[0],args[1]);
-	}
-};
+struct Cosinus { double operator()(const std::vector<double> args) { return std::cos(args[0]); } };
+struct Sinus { double operator()(const std::vector<double> args) { return std::sin(args[0]); } };
+struct Arctan2 { double operator()(const std::vector<double> args) { return std::atan2(args[0],args[1]); } };
 
 // Unleash the power of spirit : see the use of UserArg below
-struct UserArg : CompactExpressionParser::Function
+struct UserArg
 {
-	typedef boost::shared_ptr<UserArg> pointer;
 	double m_value;
 	UserArg() : m_value(0.){}
 	UserArg(const double& iValue) : m_value(iValue) {}
 	UserArg(const UserArg& iArg) : m_value(iArg.m_value) {}
 	UserArg& operator=(const UserArg& iArg) { m_value = iArg.m_value; return *this; }
 	UserArg& operator=(const double& iValue) { m_value = iValue; return *this; }
-	virtual double operator()(const std::vector<double> args) { return m_value; }
+	double operator()(const std::vector<double> args) { return m_value; }
 };
 
 // Some convenient utilities for the main loop
@@ -105,10 +85,10 @@ int main()
 	add_example(index_example)
 	{
 		Expression exp;
-		exp.register_user_function("Pi", Function::FuncPtr(new Pi()));
-		exp.register_user_function("cos", Function::FuncPtr(new Cosinus()));
-		exp.register_user_function("sin", Function::FuncPtr(new Sinus()));
-		exp.register_user_function("atan2", Function::FuncPtr(new Arctan2()));
+		exp.register_user_function("Pi", Pi() );
+		exp.register_user_function("cos", Cosinus() );
+		exp.register_user_function("sin", Sinus() );
+		exp.register_user_function("atan2", Arctan2() );
 
 		exp.compile("sin(Pi()/2)");
 		cep_example_output(index_example, exp() );
@@ -138,21 +118,21 @@ int main()
 	add_example(index_example)
 	{
 		// Prepare the expression
-		UserArg::pointer arg1(new UserArg());
-		UserArg::pointer arg2(new UserArg());
+		UserArg arg1;
+		UserArg arg2;
 		Expression exp;
-		exp.register_user_function("Arg1", arg1);
-		exp.register_user_function("Arg2", arg2);
+		exp.register_user_function("Arg1", boost::ref(arg1)); // Be sure to use a boost::ref so arg1 and arg2
+		exp.register_user_function("Arg2", boost::ref(arg2)); // can be modified AFTER compilation
 		exp.compile("4 + 3*Arg1() - Arg2()");
 
 		// Lets use it. Dont forget to think to the args as pointers
 		cep_example_output(index_example, exp() );
 
 		// Notice that you DONT have to compile the expression again
-		*arg1 = 2.; *arg2 = 5.;
+		arg1 = 2.; arg2 = 5.;
 		cep_example_output(index_example, exp() );
 
-		*arg1 = 3.; *arg2 = 1.;
+		arg1 = 3.; arg2 = 1.;
 		cep_example_output(index_example, exp() );
 
 		// Let's reuse these : the WRONG way

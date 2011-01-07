@@ -18,6 +18,7 @@
 #include <boost/spirit/include/phoenix_object.hpp>
 #include <boost/fusion/include/adapt_struct.hpp>
 #include <boost/foreach.hpp>
+#include <boost/function.hpp>
 
 #include "Interfaces.h"
 
@@ -46,12 +47,12 @@ typedef boost::variant< double,
 
 template<typename T> struct Operation { ExpressionVar opLeft; ExpressionVar opRight; };
 struct Unit { ExpressionVar value; };
-struct FunctionCall { Function::FuncPtr func; std::vector<ExpressionVar> units; };
+struct FunctionCall { UserFunctionType func; std::vector<ExpressionVar> units; };
 }
 
 namespace { namespace CEP = CompactExpressionParser ; }
 BOOST_FUSION_ADAPT_STRUCT( CEP::Unit, (CEP::ExpressionVar, value))
-BOOST_FUSION_ADAPT_STRUCT( CEP::FunctionCall, (CEP::Function::FuncPtr, func) (std::vector<CEP::ExpressionVar>, units))
+BOOST_FUSION_ADAPT_STRUCT( CEP::FunctionCall, (CEP::UserFunctionType, func) (std::vector<CEP::ExpressionVar>, units))
 BOOST_FUSION_ADAPT_STRUCT( CEP::Operation<CEP::add>, (CEP::ExpressionVar, opLeft) (CEP::ExpressionVar, opRight))
 BOOST_FUSION_ADAPT_STRUCT( CEP::Operation<CEP::sub>, (CEP::ExpressionVar, opLeft) (CEP::ExpressionVar, opRight))
 BOOST_FUSION_ADAPT_STRUCT( CEP::Operation<CEP::mult>, (CEP::ExpressionVar, opLeft) (CEP::ExpressionVar, opRight))
@@ -87,7 +88,7 @@ namespace CompactExpressionParser
 			opPower = value [at_c<0>(_val) = _1] >> '^' >> exp3 [at_c<1>(_val) = _1];
 		}
 
-		void addFunction(const std::string& iName,typename Function::FuncPtr iFunc)
+		void addFunction(const std::string& iName, UserFunctionType iFunc)
 		{
 			if(iName.size() > 0) // Trivial check for a valid function name
 				functionsTable_.add(iName,iFunc);
@@ -108,7 +109,7 @@ namespace CompactExpressionParser
 		qi::rule<Iterator, Operation<divide>(), ascii::space_type> opDiv;
 		qi::rule<Iterator, Operation<power>(), ascii::space_type> opPower;
 
-		qi::symbols<char, typename Function::FuncPtr > functionsTable_;
+		qi::symbols<char, UserFunctionType > functionsTable_;
 	};
 
 	struct ExpressionCalculator : boost::static_visitor<double>
@@ -130,7 +131,7 @@ namespace CompactExpressionParser
 	{
 		std::vector<double> args;
 		BOOST_FOREACH(const ExpressionVar& e, iFunc.units) args.push_back(Evaluate(e));
-		return (*(iFunc.func))(args);
+		return iFunc.func(args);
 	}
 }
 
