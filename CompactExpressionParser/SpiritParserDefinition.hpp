@@ -80,7 +80,7 @@ namespace CompactExpressionParser
 			group = '(' >> exp [ _val = _1] >> ')';
 			function = functionsTable_ [ at_c<0>(_val) = _1 ] >> '(' >> ')';
 			functionWithArgs = functionsTable_ [ at_c<0>(_val) = _1 ] >> arglist [ at_c<1>(_val) = _1 ];
-			arglist = '(' >> exp [push_back(_val,_1) ] >> *( ',' >> exp [push_back(_val,_1) ] ) >> ')';
+			arglist = '(' >> exp [push_back(_val,_1) ] % ',' >> ')';
 			opAdd = exp2 [at_c<0>(_val) = _1] >> '+' >> exp [at_c<1>(_val) = _1];
 			opSub = exp2 [at_c<0>(_val) = _1] >> '-' >> exp [at_c<1>(_val) = _1];
 			opMult = exp3 [at_c<0>(_val) = _1] >> '*' >> exp2 [at_c<1>(_val) = _1];
@@ -88,10 +88,12 @@ namespace CompactExpressionParser
 			opPower = value [at_c<0>(_val) = _1] >> '^' >> exp3 [at_c<1>(_val) = _1];
 		}
 
-		void addFunction(const std::string& iName, UserFunctionType iFunc)
+		bool addFunction(const std::string& iName, UserFunctionType iFunc)
 		{
-			if(iName.size() > 0) // Trivial check for a valid function name
-				functionsTable_.add(iName,iFunc);
+			std::string::const_iterator iter = iName.begin(); std::string::const_iterator end = iName.end();
+			bool func_name_is_valid = ( qi::parse(iter,end, qi::alpha >> *qi::alnum ) && iter == end);
+			if(func_name_is_valid) functionsTable_.add(iName,iFunc);
+			return func_name_is_valid;
 		}
 
 		qi::rule<Iterator, Unit(), ascii::space_type> glob;

@@ -13,7 +13,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/ref.hpp>
 
-#define add_example(A) cep_add_example(A);
+#define add_example(A,B) cep_add_example(A,B);
 
 // Here are the definitions of user functions that will be used later
 
@@ -48,11 +48,11 @@ void cep_example_output(int index, double value)
 	std::cout << "[Ex" << index << "] The result is : " << value << std::endl;
 }
 
-void cep_add_example(int& index)
+void cep_add_example(int& index, const std::string& iName = "")
 {
 	index++;
 	std::cout << std::endl;
-	std::cout << "Beginning example " << index << std::endl;
+	std::cout << "Example " << index << ": " << iName << std::endl;
 }
 
 // Check out the examples here !
@@ -61,8 +61,7 @@ int main()
 	using namespace CompactExpressionParser;
 	int index_example = 0;
 
-	// The most simple example
-	add_example(index_example)
+	add_example(index_example,"The most simple example")
 	{
 		Expression exp;
 		exp.compile("4+3*2"); // Notice that the operands priorities are supported
@@ -71,8 +70,7 @@ int main()
 		cep_example_output(index_example, exp() );
 	}
 
-	// Testing the parsing success
-	add_example(index_example)
+	add_example(index_example,"Testing the parsing success")
 	{
 		Expression exp;
 		bool status = exp.compile("4+3*2^(6+3)"); // Success
@@ -81,8 +79,7 @@ int main()
 		cep_example_output(index_example, status ? 1. : 0. );
 	}
 
-	// Using some additional functions
-	add_example(index_example)
+	add_example(index_example,"Using some additional functions")
 	{
 		Expression exp;
 		exp.register_user_function("Pi", Pi() );
@@ -100,8 +97,17 @@ int main()
 		cep_example_output(index_example, exp() );
 	}
 
-	// Using user arguments : way of the NOOB
-	add_example(index_example)
+	add_example(index_example,"Testing function registering success")
+	{
+		Expression exp;
+		bool status = exp.register_user_function("Salut34Roger", Pi() ); // Success
+		cep_example_output(index_example, status ? 1. : 0. );
+		status = exp.register_user_function("_12/Invalid?Func+Name", Pi() ); // Fail
+		cep_example_output(index_example, status ? 1. : 0. );
+	}
+
+
+	add_example(index_example,"Using user arguments (NOOB version)")
 	{
 		std::string string_raw_exp("4 + 3*%1% - %2%");
 		double user_arg1 = 2.;
@@ -113,10 +119,10 @@ int main()
 		cep_example_output(index_example, exp() );
 	}
 
-	// Using user arguments : way of the MASTER
-	// This example is important cause it shows the ability not to recompile an expression
-	add_example(index_example)
+	add_example(index_example,"Using user arguments (MASTER version)")
 	{
+		// This example is important cause it shows the ability not to recompile an expression
+
 		// Prepare the expression
 		UserArg arg1;
 		UserArg arg2;
@@ -124,8 +130,6 @@ int main()
 		exp.register_user_function("Arg1", boost::ref(arg1)); // Be sure to use a boost::ref so arg1 and arg2
 		exp.register_user_function("Arg2", boost::ref(arg2)); // can be modified AFTER compilation
 		exp.compile("4 + 3*Arg1() - Arg2()");
-
-		// Lets use it. Dont forget to think to the args as pointers
 		cep_example_output(index_example, exp() );
 
 		// Notice that you DONT have to compile the expression again
@@ -135,14 +139,12 @@ int main()
 		arg1 = 3.; arg2 = 1.;
 		cep_example_output(index_example, exp() );
 
-		// Let's reuse these : the WRONG way
-		cep_add_example(index_example);
+		cep_add_example(index_example,"Re-use user arguments (WRONG way)");
 		Expression exp2;
 		bool status = exp2.compile("4 + 3*Arg1() - Arg2()"); // This will fail cause Arg1 and Arg2 are not registered
 		cep_example_output(index_example, status ? 1. : 0. );
 
-		// Let's reuse these : the RIGHT way
-		cep_add_example(index_example);
+		cep_add_example(index_example,"Re-use user arguments (RIGHT way)");
 		Expression exp3(exp); // <- exp3 will get the same register than exp, still being ANOTHER expression
 		exp3.compile("Arg1() + Arg2()"); // This will success cause Arg1 and Arg2 are registered
 

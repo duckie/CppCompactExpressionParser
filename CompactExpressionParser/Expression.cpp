@@ -35,9 +35,9 @@ bool Expression::compile(const std::string& iExpression)
 double Expression::eval() { return (*m_calculator)(*m_result); }
 double Expression::operator() () { return eval(); }
 
-void Expression::register_user_function(const std::string& iName, UserFunctionType iFunc)
+bool Expression::register_user_function(const std::string& iName, UserFunctionType iFunc)
 {
-	m_grammar->addFunction(iName,iFunc);
+	return m_grammar->addFunction(iName,iFunc);
 }
 
 }
