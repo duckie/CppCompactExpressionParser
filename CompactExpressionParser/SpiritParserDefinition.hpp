@@ -97,20 +97,14 @@ namespace CompactExpressionParser
 		}
 
 		qi::rule<Iterator, Unit(), ascii::space_type> glob;
-		qi::rule<Iterator, ExpressionVar(), ascii::space_type> exp;
-		qi::rule<Iterator, ExpressionVar(), ascii::space_type> exp2;
-		qi::rule<Iterator, ExpressionVar(), ascii::space_type> exp3;
-		qi::rule<Iterator, ExpressionVar(), ascii::space_type> value;
-		qi::rule<Iterator, ExpressionVar(), ascii::space_type> group;
-		qi::rule<Iterator, FunctionCall(), ascii::space_type> function;
-		qi::rule<Iterator, FunctionCall(), ascii::space_type> functionWithArgs;
+		qi::rule<Iterator, ExpressionVar(), ascii::space_type> exp, exp2, exp3, value, group;
+		qi::rule<Iterator, FunctionCall(), ascii::space_type> function, functionWithArgs;
 		qi::rule<Iterator, std::vector<ExpressionVar>(), ascii::space_type> arglist;
 		qi::rule<Iterator, Operation<add>(), ascii::space_type> opAdd;
 		qi::rule<Iterator, Operation<sub>(), ascii::space_type> opSub;
 		qi::rule<Iterator, Operation<mult>(), ascii::space_type> opMult;
 		qi::rule<Iterator, Operation<divide>(), ascii::space_type> opDiv;
 		qi::rule<Iterator, Operation<power>(), ascii::space_type> opPower;
-
 		qi::symbols<char, UserFunctionType > functionsTable_;
 	};
 
