@@ -72,26 +72,26 @@ namespace CompactExpressionParser
 			using phoenix::push_back;
 			using phoenix::ref;
 
-			glob = exp [ at_c<0>(_val) = _1 ];
-			exp = (opAdd | opSub) [ _val = _1 ] | exp2 [ _val = _1 ];
-			exp2 = (opMult | opDiv) [ _val = _1 ] | exp3 [ _val = _1 ];
-			exp3 = opPower [ _val = _1 ] | value [ _val = _1 ];
-			value = (double_ | function | functionWithArgs) [ _val = _1] | group [_val = _1];
-			group = '(' >> exp [ _val = _1] >> ')';
-			function = functionsTable_ [ at_c<0>(_val) = _1 ] >> '(' >> ')';
-			functionWithArgs = functionsTable_ [ at_c<0>(_val) = _1 ] >> arglist [ at_c<1>(_val) = _1 ];
-			arglist = '(' >> exp [push_back(_val,_1) ] % ',' >> ')';
-			opAdd = exp2 [at_c<0>(_val) = _1] >> '+' >> exp [at_c<1>(_val) = _1];
-			opSub = exp2 [at_c<0>(_val) = _1] >> '-' >> exp [at_c<1>(_val) = _1];
-			opMult = exp3 [at_c<0>(_val) = _1] >> '*' >> exp2 [at_c<1>(_val) = _1];
-			opDiv = exp3 [at_c<0>(_val) = _1] >> '/' >> exp2 [at_c<1>(_val) = _1];
-			opPower = value [at_c<0>(_val) = _1] >> '^' >> exp3 [at_c<1>(_val) = _1];
+			glob = exp [ at_c<0>(_val) = qi::_1 ];
+			exp = (opAdd | opSub) [ _val = qi::_1 ] | exp2 [ _val = qi::_1 ];
+			exp2 = (opMult | opDiv) [ _val = qi::_1 ] | exp3 [ _val = qi::_1 ];
+			exp3 = opPower [ _val = qi::_1 ] | value [ _val = qi::_1 ];
+			value = (double_ | function | functionWithArgs) [ _val = qi::_1] | group [_val = qi::_1];
+			group = '(' >> exp [ _val = qi::_1] >> ')';
+			function = functionsTable_ [ at_c<0>(_val) = qi::_1 ] >> '(' >> ')';
+			functionWithArgs = functionsTable_ [ at_c<0>(_val) = qi::_1 ] >> arglist [ at_c<1>(_val) = qi::_1 ];
+			arglist = '(' >> exp [push_back(_val,qi::_1) ] % ',' >> ')';
+			opAdd = exp2 [at_c<0>(_val) = qi::_1] >> '+' >> exp [at_c<1>(_val) = qi::_1];
+			opSub = exp2 [at_c<0>(_val) = qi::_1] >> '-' >> exp [at_c<1>(_val) = qi::_1];
+			opMult = exp3 [at_c<0>(_val) = qi::_1] >> '*' >> exp2 [at_c<1>(_val) = qi::_1];
+			opDiv = exp3 [at_c<0>(_val) = qi::_1] >> '/' >> exp2 [at_c<1>(_val) = qi::_1];
+			opPower = value [at_c<0>(_val) = qi::_1] >> '^' >> exp3 [at_c<1>(_val) = qi::_1];
 		}
 
 		bool addFunction(const std::string& iName, UserFunctionType iFunc)
 		{
 			std::string::const_iterator iter = iName.begin(); std::string::const_iterator end = iName.end();
-			bool func_name_is_valid = ( qi::parse(iter,end, qi::alpha >> *qi::alnum ) && iter == end);
+			bool func_name_is_valid = ( qi::parse(iter,end, (qi::alpha | '_') >> *(qi::alnum | '_')) && iter == end);
 			if(func_name_is_valid) functionsTable_.add(iName,iFunc);
 			return func_name_is_valid;
 		}

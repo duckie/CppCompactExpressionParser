@@ -7,6 +7,8 @@
 /** @author: Jean-Bernard Jansen <jeanbernard@jjansen.fr> */
 
 #include <iostream>
+#include <sstream>
+#include <vector>
 #include <cmath>
 #include <CompactExpressionParser/Expression.h>
 #include <boost/format.hpp>
@@ -40,6 +42,55 @@ struct UserArg
 	UserArg& operator=(const UserArg& iArg) { m_value = iArg.m_value; return *this; }
 	UserArg& operator=(const double& iValue) { m_value = iValue; return *this; }
 	double operator()(const std::vector<double>& args) { return m_value; }
+};
+
+
+#include <boost/spirit/include/qi.hpp>
+#include <boost/spirit/include/phoenix.hpp>
+#include <boost/spirit/include/phoenix_core.hpp>
+#include <boost/spirit/include/phoenix_operator.hpp>
+#include <boost/spirit/include/phoenix_object.hpp>
+#include <boost/fusion/include/adapt_struct.hpp>
+#include <boost/bind.hpp>
+#include <boost/function.hpp>
+#include <boost/lambda/lambda.hpp>
+
+namespace phoenix = boost::phoenix;
+namespace qi = boost::spirit::qi;
+namespace lambda = boost::lambda;
+
+struct UserFunc
+{
+	CompactExpressionParser::Expression m_Exp;
+	const std::vector<double> * m_dynamic_args;
+
+	double ArgumentGetter(const std::vector<double>& iIndex)
+	{
+		return m_dynamic_args->at(static_cast<unsigned int>(iIndex[0]) - 1);
+	}
+
+	UserFunc(std::string iName, std::string iStringExpr)
+	{
+		std::ostringstream arg_reader;
+		arg_reader << "_Binder_" << iName;
+		std::string arg_reader_name = arg_reader.str();
+		m_Exp.register_function(arg_reader_name,boost::bind(&UserFunc::ArgumentGetter,this,::_1));
+
+		std::ostringstream m_output;
+		std::string::const_iterator iter = iStringExpr.begin(); std::string::const_iterator end = iStringExpr.end();
+		bool func_parsing = qi::parse(iter,end,
+			*( (qi::char_ - '_')[ m_output << lambda::_1 ] | '_' >> qi::int_[ lambda::var(m_output) << arg_reader_name << '(' << lambda::_1 << ')' ] )
+		);
+
+		std::cout << "Parsed: " << m_output.str() << std::endl;
+		bool succes = m_Exp.compile(m_output.str());
+		std::cout << "Compiled: " << succes << std::endl;
+	}
+
+	double operator()(const std::vector<double>& args) {
+		m_dynamic_args = &args;
+		return m_Exp();
+	}
 };
 
 // Some convenient utilities for the main loop
@@ -82,10 +133,10 @@ int main()
 	add_example(index_example,"Using some additional functions")
 	{
 		Expression exp;
-		exp.register_user_function("Pi", Pi() );
-		exp.register_user_function("cos", Cosinus() );
-		exp.register_user_function("sin", Sinus() );
-		exp.register_user_function("atan2", Arctan2() );
+		exp.register_function("Pi", Pi() );
+		exp.register_function("cos", Cosinus() );
+		exp.register_function("sin", Sinus() );
+		exp.register_function("atan2", Arctan2() );
 
 		exp.compile("sin(Pi()/2)");
 		cep_example_output(index_example, exp() );
@@ -100,9 +151,9 @@ int main()
 	add_example(index_example,"Testing function registering success")
 	{
 		Expression exp;
-		bool status = exp.register_user_function("Salut34Roger", Pi() ); // Success
+		bool status = exp.register_function("Salut34Roger", Pi() ); // Success
 		cep_example_output(index_example, status ? 1. : 0. );
-		status = exp.register_user_function("_12/Invalid?Func+Name", Pi() ); // Fail
+		status = exp.register_function("_12/Invalid?Func+Name", Pi() ); // Fail
 		cep_example_output(index_example, status ? 1. : 0. );
 	}
 
@@ -127,8 +178,8 @@ int main()
 		UserArg arg1;
 		UserArg arg2;
 		Expression exp;
-		exp.register_user_function("Arg1", boost::ref(arg1)); // Be sure to use a boost::ref so arg1 and arg2
-		exp.register_user_function("Arg2", boost::ref(arg2)); // can be modified AFTER compilation
+		exp.register_function("Arg1", boost::ref(arg1)); // Be sure to use a boost::ref so arg1 and arg2
+		exp.register_function("Arg2", boost::ref(arg2)); // can be modified AFTER compilation
 		exp.compile("4 + 3*Arg1() - Arg2()");
 		cep_example_output(index_example, exp() );
 
@@ -150,6 +201,16 @@ int main()
 
 		cep_example_output(index_example, exp() ); // Now you can use both and change args
 		cep_example_output(index_example, exp3() );// without recompilation
+	}
+
+	add_example(index_example,"Using runtime defined functions")
+	{
+		UserFunc roger("roger","_1 + _2 * _3");
+		Expression exp;
+		exp.register_function("roger",boost::ref(roger));
+		exp.compile("roger(1,2,2)");
+
+		cep_example_output(index_example, exp() );
 	}
 
 	return 0;

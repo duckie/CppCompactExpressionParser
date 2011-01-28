@@ -30,13 +30,31 @@ public:
 	bool compile(const std::string& iExpression);
 	double eval();
 	double operator() ();
-	bool register_user_function(const std::string& iName, UserFunctionType iFunc);
+	bool register_function(const std::string& iName, UserFunctionType iFunc);
 
 private:
 	boost::shared_ptr< ExpGrammar<std::string::const_iterator> > m_grammar;
 	boost::shared_ptr< ExpressionCalculator > m_calculator;
 	boost::scoped_ptr< Unit > m_result;
 	std::string::const_iterator m_iter, m_end;
+};
+
+class RuntimeFunction
+{
+public:
+	RuntimeFunction(const Expression& iExp, const std::string& iName);
+	bool compile(const std::string& iStringExpr);
+	double operator()(const std::vector<double>& args);
+
+private:
+	RuntimeFunction(const RuntimeFunction&);
+	RuntimeFunction& operator= (const RuntimeFunction&);
+	double ArgumentGetter(const std::vector<double>& iIndex);
+
+	std::string m_name;
+	std::string m_arg_reader_name;
+	Expression m_Exp;
+	const std::vector<double> * m_dynamic_args;
 };
 
 }
