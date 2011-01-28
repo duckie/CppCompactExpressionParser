@@ -42,7 +42,7 @@ private:
 class RuntimeFunction
 {
 public:
-	RuntimeFunction(const Expression& iExp, const std::string& iName);
+	RuntimeFunction(Expression& iExp, const std::string& iName);
 	bool compile(const std::string& iStringExpr);
 	double operator()(const std::vector<double>& args);
 

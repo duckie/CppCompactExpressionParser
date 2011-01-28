@@ -46,13 +46,14 @@ bool Expression::register_function(const std::string& iName, UserFunctionType iF
 	return m_grammar->addFunction(iName,iFunc);
 }
 
-RuntimeFunction::RuntimeFunction(const Expression& iExp, const std::string& iName)
+RuntimeFunction::RuntimeFunction(Expression& iExp, const std::string& iName)
 : m_Exp(iExp), m_name(iName)
 {
 	std::ostringstream arg_reader;
 	arg_reader << "_Binder_" << m_name;
 	m_arg_reader_name = arg_reader.str();
 	m_Exp.register_function(m_arg_reader_name,boost::bind(&RuntimeFunction::ArgumentGetter,this,::_1));
+	iExp.register_function(m_name,boost::ref(*this));
 }
 
 bool RuntimeFunction::compile(const std::string& iStringExpr)
@@ -62,11 +63,7 @@ bool RuntimeFunction::compile(const std::string& iStringExpr)
 	bool func_parsing = qi::parse(iter,end,
 		*( (qi::char_ - '_')[ m_output << lambda::_1 ] | '_' >> qi::int_[ lambda::var(m_output) << m_arg_reader_name << '(' << lambda::_1 << ')' ] )
 	);
-
-	std::cout << "RF Comp: " << m_output.str() << std::endl;
-	bool success = m_Exp.compile(m_output.str());
-	std::cout << "RF success: " << success << std::endl;
-	return success;
+	return m_Exp.compile(m_output.str());
 }
 
 double RuntimeFunction::ArgumentGetter(const std::vector<double>& iIndex)

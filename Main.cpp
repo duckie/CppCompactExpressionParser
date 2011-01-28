@@ -44,55 +44,6 @@ struct UserArg
 	double operator()(const std::vector<double>& args) { return m_value; }
 };
 
-
-#include <boost/spirit/include/qi.hpp>
-#include <boost/spirit/include/phoenix.hpp>
-#include <boost/spirit/include/phoenix_core.hpp>
-#include <boost/spirit/include/phoenix_operator.hpp>
-#include <boost/spirit/include/phoenix_object.hpp>
-#include <boost/fusion/include/adapt_struct.hpp>
-#include <boost/bind.hpp>
-#include <boost/function.hpp>
-#include <boost/lambda/lambda.hpp>
-
-namespace phoenix = boost::phoenix;
-namespace qi = boost::spirit::qi;
-namespace lambda = boost::lambda;
-
-struct UserFunc
-{
-	CompactExpressionParser::Expression m_Exp;
-	const std::vector<double> * m_dynamic_args;
-
-	double ArgumentGetter(const std::vector<double>& iIndex)
-	{
-		return m_dynamic_args->at(static_cast<unsigned int>(iIndex[0]) - 1);
-	}
-
-	UserFunc(std::string iName, std::string iStringExpr)
-	{
-		std::ostringstream arg_reader;
-		arg_reader << "_Binder_" << iName;
-		std::string arg_reader_name = arg_reader.str();
-		m_Exp.register_function(arg_reader_name,boost::bind(&UserFunc::ArgumentGetter,this,::_1));
-
-		std::ostringstream m_output;
-		std::string::const_iterator iter = iStringExpr.begin(); std::string::const_iterator end = iStringExpr.end();
-		bool func_parsing = qi::parse(iter,end,
-			*( (qi::char_ - '_')[ m_output << lambda::_1 ] | '_' >> qi::int_[ lambda::var(m_output) << arg_reader_name << '(' << lambda::_1 << ')' ] )
-		);
-
-		std::cout << "Parsed: " << m_output.str() << std::endl;
-		bool succes = m_Exp.compile(m_output.str());
-		std::cout << "Compiled: " << succes << std::endl;
-	}
-
-	double operator()(const std::vector<double>& args) {
-		m_dynamic_args = &args;
-		return m_Exp();
-	}
-};
-
 // Some convenient utilities for the main loop
 void cep_example_output(int index, double value)
 {
@@ -205,10 +156,15 @@ int main()
 
 	add_example(index_example,"Using runtime defined functions")
 	{
-		UserFunc roger("roger","_1 + _2 * _3");
 		Expression exp;
-		exp.register_function("roger",boost::ref(roger));
-		exp.compile("roger(1,2,2)");
+
+		RuntimeFunction f1(exp,"MyFunc1");
+		f1.compile("_1 * _2");
+
+		RuntimeFunction f2(exp,"MyFunc2");
+		f2.compile("_1 - _2*_3");
+
+		exp.compile("MyFunc1(2,2) + MyFunc2(10,2,3)");
 
 		cep_example_output(index_example, exp() );
 	}
