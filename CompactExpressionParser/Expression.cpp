@@ -63,7 +63,10 @@ bool RuntimeFunction::compile(const std::string& iStringExpr)
 	bool func_parsing = qi::parse(iter,end,
 		*( (qi::char_ - '_')[ m_output << lambda::_1 ] | '_' >> qi::int_[ lambda::var(m_output) << m_arg_reader_name << '(' << lambda::_1 << ')' ] )
 	);
-	return m_Exp.compile(m_output.str());
+	if(func_parsing && iter == end)
+		return m_Exp.compile(m_output.str());
+	else
+		return false;
 }
 
 double RuntimeFunction::ArgumentGetter(const std::vector<double>& iIndex)
