@@ -1,7 +1,7 @@
 # Developed with CMake 2.8, but may work with older versions
 cmake_minimum_required (VERSION 2.8)
 
-project(BoostSpiritTutorial)
+project(CppCompactExpressionParser)
 set(CMAKE_VERBOSE_MAKEFILE OFF)
 
 ### Commons includes ###
@@ -26,6 +26,6 @@ endif()
 set(SOURCES_FILES CompactExpressionParser/Expression.cpp)
 
 ### Compiling ###
-add_executable(${PROJECT_NAME} Main.cpp ${SOURCES_FILES})
+add_executable(run_samples Main.cpp ${SOURCES_FILES})
 ### Linking ###
-target_link_libraries(${PROJECT_NAME} ${LIBRARIES})
+target_link_libraries(run_samples ${LIBRARIES})
