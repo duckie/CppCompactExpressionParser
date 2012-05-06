@@ -15,8 +15,6 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/ref.hpp>
 
-#define add_example(A,B) cep_add_example(A,B);
-
 // Here are the definitions of user functions that will be used later
 
 struct Pi
@@ -63,7 +61,7 @@ int main()
 	using namespace CompactExpressionParser;
 	int index_example = 0;
 
-	add_example(index_example,"The most simple example")
+	cep_add_example(index_example,"The most simple example");
 	{
 		Expression exp;
 		exp.compile("4+3*2"); // Notice that the operands priorities are supported
@@ -72,7 +70,7 @@ int main()
 		cep_example_output(index_example, exp() );
 	}
 
-	add_example(index_example,"Testing the parsing success")
+	cep_add_example(index_example,"Testing the parsing success");
 	{
 		Expression exp;
 		bool status = exp.compile("4+3*2^(6+3)"); // Success
@@ -81,7 +79,7 @@ int main()
 		cep_example_output(index_example, status ? 1. : 0. );
 	}
 
-	add_example(index_example,"Using some additional functions")
+	cep_add_example(index_example,"Using some additional functions");
 	{
 		Expression exp;
 		exp.register_function("Pi", Pi() );
@@ -99,7 +97,7 @@ int main()
 		cep_example_output(index_example, exp() );
 	}
 
-	add_example(index_example,"Testing function registering success")
+	cep_add_example(index_example,"Testing function registering success");
 	{
 		Expression exp;
 		bool status = exp.register_function("Salut34Roger", Pi() ); // Success
@@ -109,7 +107,7 @@ int main()
 	}
 
 
-	add_example(index_example,"Using user arguments (NOOB version)")
+	cep_add_example(index_example,"Using user arguments (NOOB version)");
 	{
 		std::string string_raw_exp("4 + 3*%1% - %2%");
 		double user_arg1 = 2.;
@@ -121,7 +119,7 @@ int main()
 		cep_example_output(index_example, exp() );
 	}
 
-	add_example(index_example,"Using user arguments (MASTER version)")
+	cep_add_example(index_example,"Using user arguments (MASTER version)");
 	{
 		// This example is important cause it shows the ability not to recompile an expression
 
@@ -154,7 +152,7 @@ int main()
 		cep_example_output(index_example, exp3() );// without recompilation
 	}
 
-	add_example(index_example,"Using runtime defined functions")
+	cep_add_example(index_example,"Using runtime defined functions");
 	{
 		Expression exp;
 
