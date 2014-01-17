@@ -166,6 +166,12 @@ int main()
 
 		cep_example_output(index_example, exp() );
 	}
+  cep_add_example(index_example, "Hackin");
+	{
+		Expression exp;
+		exp.compile("2--1");
+		cep_example_output(index_example, exp());
+	}
 
 	return 0;
 }
