@@ -182,7 +182,7 @@ int main()
 		cep_example_output(index_example, exp());
 	}
 
-  cep_add_example(index_example, "Strings");
+  cep_add_example(index_example, "Strings support");
 	{
 		Expression exp;
     exp.register_function("Print",Print());

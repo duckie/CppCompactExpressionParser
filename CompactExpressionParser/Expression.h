@@ -11,14 +11,34 @@
 
 #include <string>
 #include <memory>
-
+#include <boost/variant/variant_fwd.hpp>
+#include <tuple>
 #include "Interfaces.h"
 
 namespace CompactExpressionParser
 {
 
+template<typename T> struct Operation;
+struct add; struct sub;
+struct mult; struct divide;
+struct power;
+struct FunctionCall;
+
+typedef boost::make_recursive_variant< 
+    double,
+    std::string,
+		std::tuple<boost::recursive_variant_>,
+		boost::recursive_wrapper< Operation<add> >,
+		boost::recursive_wrapper< Operation<sub> >,
+		boost::recursive_wrapper< Operation<mult> >,
+		boost::recursive_wrapper< Operation<divide> >,
+		boost::recursive_wrapper< Operation<power> >,
+		boost::recursive_wrapper< FunctionCall >
+> ExpressionVar;
+
+using Unit = std::tuple<ExpressionVar>;
+
 template <typename Iterator> struct ExpGrammar;
-struct Unit;
 struct ExpressionCalculator;
 
 class Expression {

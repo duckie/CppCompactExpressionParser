@@ -18,7 +18,9 @@
 #include <boost/spirit/include/phoenix_object.hpp>
 #include <boost/fusion/include/adapt_struct.hpp>
 #include <boost/variant.hpp>
-
+#include <boost/fusion/adapted.hpp>
+#include <boost/fusion/adapted/std_tuple.hpp>
+#include <boost/variant/recursive_variant.hpp>
 #include "Interfaces.h"
 
 namespace CompactExpressionParser
@@ -31,12 +33,23 @@ template<typename T> struct Operation;
 struct add; struct sub;
 struct mult; struct divide;
 struct power;
-struct Unit;
+//struct Unit;
 struct FunctionCall;
 
-typedef boost::variant< double,
+//typedef boost::variant< double,
+    //std::string,
+		//boost::recursive_wrapper< std:: >,
+		//boost::recursive_wrapper< Operation<add> >,
+		//boost::recursive_wrapper< Operation<sub> >,
+		//boost::recursive_wrapper< Operation<mult> >,
+		//boost::recursive_wrapper< Operation<divide> >,
+		//boost::recursive_wrapper< Operation<power> >,
+		//boost::recursive_wrapper< FunctionCall >
+//> ExpressionVar;
+
+typedef boost::make_recursive_variant< double,
     std::string,
-		boost::recursive_wrapper< Unit >,
+		std::tuple<boost::recursive_variant_ >,
 		boost::recursive_wrapper< Operation<add> >,
 		boost::recursive_wrapper< Operation<sub> >,
 		boost::recursive_wrapper< Operation<mult> >,
@@ -46,12 +59,13 @@ typedef boost::variant< double,
 > ExpressionVar;
 
 template<typename T> struct Operation { ExpressionVar opLeft; ExpressionVar opRight; };
-struct Unit { ExpressionVar value; };
+//struct Unit { ExpressionVar value; };
+using Unit = std::tuple<ExpressionVar>;
 struct FunctionCall { UserFunctionType func; std::vector<ExpressionVar> units; };
 }
 
 namespace { namespace CEP = CompactExpressionParser ; }
-BOOST_FUSION_ADAPT_STRUCT( CEP::Unit, (CEP::ExpressionVar, value))
+//BOOST_FUSION_ADAPT_STRUCT( CEP::Unit, (CEP::ExpressionVar, value))
 BOOST_FUSION_ADAPT_STRUCT( CEP::FunctionCall, (CEP::UserFunctionType, func) (std::vector<CEP::ExpressionVar>, units))
 BOOST_FUSION_ADAPT_STRUCT( CEP::Operation<CEP::add>, (CEP::ExpressionVar, opLeft) (CEP::ExpressionVar, opRight))
 BOOST_FUSION_ADAPT_STRUCT( CEP::Operation<CEP::sub>, (CEP::ExpressionVar, opLeft) (CEP::ExpressionVar, opRight))
@@ -122,7 +136,7 @@ namespace CompactExpressionParser
 		ExpressionCalculator(){}
 		double Evaluate(const ExpressionVar& iExp) const { return boost::apply_visitor(*this, iExp); }
 		ResultType operator()(const FunctionCall& iFunc) const;
-		ResultType operator()(const Unit& iUnit) const { return Evaluate(iUnit.value); }
+		ResultType operator()(const Unit& iUnit) const { return Evaluate(std::get<0>(iUnit)); }
 		ResultType operator()(const double& ivalue) const { return ivalue; }
     ResultType operator()(const std::string& ivalue) const { return ivalue; }
 		template <typename T> ResultType operator()(Operation<T> const& iExp) const;
