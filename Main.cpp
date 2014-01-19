@@ -16,19 +16,20 @@
 #include <boost/ref.hpp>
 
 // Here are the definitions of user functions that will be used later
+using CompactExpressionParser::ResultType;
 
 struct Pi
 {
-	double operator()(const std::vector<double>& args)
+	ResultType operator()(const std::vector<ResultType>& args)
 	{
 		static double pi = std::atan2(0.,-1.);
 		return pi;
 	}
 };
 
-struct Cosinus { double operator()(const std::vector<double>& args) { return std::cos(args[0]); } };
-struct Sinus { double operator()(const std::vector<double>& args) { return std::sin(args[0]); } };
-struct Arctan2 { double operator()(const std::vector<double>& args) { return std::atan2(args[0],args[1]); } };
+struct Cosinus { ResultType operator()(const std::vector<ResultType>& args) { return std::cos(args[0]); } };
+struct Sinus { ResultType operator()(const std::vector<ResultType>& args) { return std::sin(args[0]); } };
+struct Arctan2 { ResultType operator()(const std::vector<ResultType>& args) { return std::atan2(args[0],args[1]); } };
 
 // Unleash the power of spirit : see the use of UserArg below
 struct UserArg
@@ -39,7 +40,15 @@ struct UserArg
 	UserArg(const UserArg& iArg) : m_value(iArg.m_value) {}
 	UserArg& operator=(const UserArg& iArg) { m_value = iArg.m_value; return *this; }
 	UserArg& operator=(const double& iValue) { m_value = iValue; return *this; }
-	double operator()(const std::vector<double>& args) { return m_value; }
+	ResultType operator()(const std::vector<ResultType>& args) { return m_value; }
+};
+
+// Using strings
+struct Print { 
+  ResultType operator()(const std::vector<ResultType>& args) { 
+    std::cout << std::string(args[0]) << std::endl;
+    return 0.;
+  } 
 };
 
 // Some convenient utilities for the main loop
@@ -173,6 +182,14 @@ int main()
 		cep_example_output(index_example, exp());
 	}
 
+  cep_add_example(index_example, "Strings");
+	{
+		Expression exp;
+    exp.register_function("Print",Print());
+		bool status = exp.compile("Print(\"\\nCoucou Roger/mon\\\\Pote\")");
+		cep_example_output(index_example, status ? 1. : 0.);
+		cep_example_output(index_example, exp());
+	}
 	return 0;
 }
 

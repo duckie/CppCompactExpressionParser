@@ -69,13 +69,11 @@ bool RuntimeFunction::compile(const std::string& iStringExpr)
 		return false;
 }
 
-double RuntimeFunction::ArgumentGetter(const std::vector<double>& iIndex)
-{
-	return m_dynamic_args->at(static_cast<unsigned int>(iIndex[0]) - 1);
+ResultType RuntimeFunction::ArgumentGetter(const std::vector<ResultType>& iIndex) {
+	return m_dynamic_args->at(static_cast<size_t>(iIndex[0]) - 1);
 }
 
-double RuntimeFunction::operator()(const std::vector<double>& args)
-{
+ResultType RuntimeFunction::operator()(const std::vector<ResultType>& args) {
 	m_dynamic_args = &args; return m_Exp();
 }
 

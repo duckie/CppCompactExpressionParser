@@ -10,11 +10,31 @@
 #define CEP_INTERFACES_H_
 
 #include <vector>
+#include <string>
 #include <boost/function.hpp>
+#include <boost/variant.hpp>
 
-namespace CompactExpressionParser
-{
-typedef boost::function< double (const std::vector<double>&) > UserFunctionType;
-}
+namespace CompactExpressionParser {
+class ResultType { 
+  boost::variant<double, std::string> value_;
+
+ public:
+  ResultType() {}
+  ResultType(double value) : value_(value) {}
+  ResultType(std::string const& value) : value_(value) {}
+  ResultType& operator= (double value) { value_ = value; return *this; }
+  ResultType& operator= (std::string const& value) { value_ = value; return *this; }
+  operator double () const { 
+    double const * pv = boost::get<double>(&value_);
+    return pv ? *pv : 0.;
+  }
+  operator std::string () const { 
+    std::string const * pv = boost::get<std::string>(&value_);
+    return pv ? *pv : "fuck";
+  }
+};
+
+typedef boost::function< ResultType (const std::vector<ResultType>&) > UserFunctionType;
+}  // namespace CompactExpressionParser
 
 #endif /* CEP_INTERFACES_H_ */

@@ -19,6 +19,7 @@
 #include <boost/fusion/include/adapt_struct.hpp>
 #include <boost/foreach.hpp>
 #include <boost/function.hpp>
+#include <boost/variant.hpp>
 
 #include "Interfaces.h"
 
@@ -36,6 +37,7 @@ struct Unit;
 struct FunctionCall;
 
 typedef boost::variant< double,
+    std::string,
 		boost::recursive_wrapper< Unit >,
 		boost::recursive_wrapper< Operation<add> >,
 		boost::recursive_wrapper< Operation<sub> >,
@@ -72,11 +74,18 @@ namespace CompactExpressionParser
 			using phoenix::push_back;
 			using phoenix::ref;
 
+      unesc_char.add("\\a", '\a')("\\b", '\b')("\\f", '\f')("\\n", '\n')
+        ("\\r", '\r')("\\t", '\t')("\\v", '\v')
+        ("\\\\", '\\')("\\\'", '\'')("\\\"", '\"')
+        (" ",' ')("/",'/')
+        ;
+
 			glob = exp [ at_c<0>(_val) = qi::_1 ];
 			exp = (opAdd | opSub) [ _val = qi::_1 ] | exp2 [ _val = qi::_1 ];
 			exp2 = (opMult | opDiv) [ _val = qi::_1 ] | exp3 [ _val = qi::_1 ];
 			exp3 = opPower [ _val = qi::_1 ] | value [ _val = qi::_1 ];
-			value = (double_ | function | functionWithArgs) [ _val = qi::_1] | group [_val = qi::_1];
+      string_value = '"' >> *(unesc_char | qi::alnum | "\\x" >> qi::hex) >> '"';
+			value = (double_ | function | functionWithArgs) [ _val = qi::_1] | group [_val = qi::_1] | string_value [_val = qi::_1];
 			group = '(' >> exp [ _val = qi::_1] >> ')';
 			function = functionsTable_ [ at_c<0>(_val) = qi::_1 ] >> '(' >> ')';
 			functionWithArgs = functionsTable_ [ at_c<0>(_val) = qi::_1 ] >> arglist [ at_c<1>(_val) = qi::_1 ];
@@ -97,6 +106,7 @@ namespace CompactExpressionParser
 		}
 
 		qi::rule<Iterator, Unit(), ascii::space_type> glob;
+		qi::rule<Iterator, std::string()> string_value;
 		qi::rule<Iterator, ExpressionVar(), ascii::space_type> exp, exp2, exp3, value, group;
 		qi::rule<Iterator, FunctionCall(), ascii::space_type> function, functionWithArgs;
 		qi::rule<Iterator, std::vector<ExpressionVar>(), ascii::space_type> arglist;
@@ -106,27 +116,29 @@ namespace CompactExpressionParser
 		qi::rule<Iterator, Operation<divide>(), ascii::space_type> opDiv;
 		qi::rule<Iterator, Operation<power>(), ascii::space_type> opPower;
 		qi::symbols<char, UserFunctionType > functionsTable_;
+    qi::symbols<char const, char const> unesc_char;
 	};
 
-	struct ExpressionCalculator : boost::static_visitor<double>
+	struct ExpressionCalculator : boost::static_visitor<ResultType>
 	{
 		ExpressionCalculator(){}
 		double Evaluate(const ExpressionVar& iExp) const { return boost::apply_visitor(*this, iExp); }
-		double operator()(const FunctionCall& iFunc) const;
-		double operator()(const Unit& iUnit) const { return Evaluate(iUnit.value); }
-		double operator()(const double& ivalue) const { return ivalue; }
-		template <typename T> double operator()(Operation<T> const& iExp) const;
+		ResultType operator()(const FunctionCall& iFunc) const;
+		ResultType operator()(const Unit& iUnit) const { return Evaluate(iUnit.value); }
+		ResultType operator()(const double& ivalue) const { return ivalue; }
+    ResultType operator()(const std::string& ivalue) const { return ivalue; }
+		template <typename T> ResultType operator()(Operation<T> const& iExp) const;
 	};
 
-	template<> double ExpressionCalculator::operator()(Operation<add> const& iExp) const { return Evaluate(iExp.opLeft) + Evaluate(iExp.opRight); }
-	template<> double ExpressionCalculator::operator()(Operation<sub> const& iExp) const { return Evaluate(iExp.opLeft) - Evaluate(iExp.opRight); }
-	template<> double ExpressionCalculator::operator()(Operation<mult> const& iExp) const { return Evaluate(iExp.opLeft) * Evaluate(iExp.opRight); }
-	template<> double ExpressionCalculator::operator()(Operation<divide> const& iExp) const { return Evaluate(iExp.opLeft) / Evaluate(iExp.opRight); }
-	template<> double ExpressionCalculator::operator()(Operation<power> const& iExp) const { return std::pow(Evaluate(iExp.opLeft),Evaluate(iExp.opRight)); }
-	double ExpressionCalculator::operator()(const FunctionCall& iFunc) const
+	template<> ResultType ExpressionCalculator::operator()(Operation<add> const& iExp) const { return Evaluate(iExp.opLeft) + Evaluate(iExp.opRight); }
+	template<> ResultType ExpressionCalculator::operator()(Operation<sub> const& iExp) const { return Evaluate(iExp.opLeft) - Evaluate(iExp.opRight); }
+	template<> ResultType ExpressionCalculator::operator()(Operation<mult> const& iExp) const { return Evaluate(iExp.opLeft) * Evaluate(iExp.opRight); }
+	template<> ResultType ExpressionCalculator::operator()(Operation<divide> const& iExp) const { return Evaluate(iExp.opLeft) / Evaluate(iExp.opRight); }
+	template<> ResultType ExpressionCalculator::operator()(Operation<power> const& iExp) const { return std::pow(Evaluate(iExp.opLeft),Evaluate(iExp.opRight)); }
+	ResultType ExpressionCalculator::operator()(const FunctionCall& iFunc) const
 	{
-		std::vector<double> args;
-		BOOST_FOREACH(const ExpressionVar& e, iFunc.units) args.push_back(Evaluate(e));
+		std::vector<ResultType> args;
+		BOOST_FOREACH(const ExpressionVar& e, iFunc.units) args.push_back(boost::apply_visitor(*this, e));
 		return iFunc.func(args);
 	}
 }

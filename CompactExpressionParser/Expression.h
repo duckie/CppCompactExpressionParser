@@ -44,17 +44,17 @@ class RuntimeFunction
 public:
 	RuntimeFunction(Expression& iExp, const std::string& iName);
 	bool compile(const std::string& iStringExpr);
-	double operator()(const std::vector<double>& args);
+	ResultType operator()(const std::vector<ResultType>& args);
 
 private:
 	RuntimeFunction(const RuntimeFunction&);
 	RuntimeFunction& operator= (const RuntimeFunction&);
-	double ArgumentGetter(const std::vector<double>& iIndex);
+	ResultType ArgumentGetter(const std::vector<ResultType>& iIndex);
 
 	std::string m_name;
 	std::string m_arg_reader_name;
 	Expression m_Exp;
-	const std::vector<double> * m_dynamic_args;
+	const std::vector<ResultType> * m_dynamic_args;
 };
 
 }
