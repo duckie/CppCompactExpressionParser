@@ -27,27 +27,28 @@ namespace phoenix = boost::phoenix;
 namespace qi = boost::spirit::qi;
 namespace ascii = boost::spirit::ascii;
 
-template<typename T> struct Operation;
+template<typename T, typename N> struct Operation;
 struct add; struct sub;
 struct mult; struct divide;
 struct power;
-struct Unit;
-struct FunctionCall;
+template <typename T> struct Unit;
+template <typename T> struct FunctionCall;
 
-typedef boost::variant< double,
-    std::string,
-		boost::recursive_wrapper< Unit >,
-		boost::recursive_wrapper< Operation<add> >,
-		boost::recursive_wrapper< Operation<sub> >,
-		boost::recursive_wrapper< Operation<mult> >,
-		boost::recursive_wrapper< Operation<divide> >,
-		boost::recursive_wrapper< Operation<power> >,
-		boost::recursive_wrapper< FunctionCall >
-> ExpressionVar;
+template <typename T> ExpressionVar = boost::variant<
+  T
+  , std::string
+  , boost::recursive_wrapper< Unit >
+  , boost::recursive_wrapper< Operation<add> >
+  , boost::recursive_wrapper< Operation<sub> >
+  , boost::recursive_wrapper< Operation<mult> >
+  , boost::recursive_wrapper< Operation<divide> >
+  , boost::recursive_wrapper< Operation<power> >
+  , boost::recursive_wrapper< FunctionCall >
+>;
 
-template<typename T> struct Operation { ExpressionVar opLeft; ExpressionVar opRight; };
-struct Unit { ExpressionVar value; };
-struct FunctionCall { UserFunctionType func; std::vector<ExpressionVar> units; };
+template <typename T, typename N> struct Operation { ExpressionVar<N> opLeft; ExpressionVar<N> opRight; };
+template <typename T> struct Unit { ExpressionVar<T> value; };
+template <typename T> struct FunctionCall { UserFunctionType<T> func; std::vector< ExpressionVar<T> > units; };
 }
 
 namespace { namespace CEP = CompactExpressionParser ; }
@@ -61,7 +62,7 @@ BOOST_FUSION_ADAPT_STRUCT( CEP::Operation<CEP::power>, (CEP::ExpressionVar, opLe
 
 namespace CompactExpressionParser
 {
-	template <typename Iterator> struct ExpGrammar : qi::grammar<Iterator, Unit(), boost::spirit::ascii::space_type>
+	template <typename Iterator, typename T> struct ExpGrammar : qi::grammar<Iterator, Unit(), boost::spirit::ascii::space_type>
 	{
 		ExpGrammar() : ExpGrammar::base_type(glob)
 		{

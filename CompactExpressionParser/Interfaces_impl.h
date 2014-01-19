@@ -6,8 +6,8 @@
 
 /** @author: Jean-Bernard Jansen <jeanbernard@jjansen.fr> */
 
-#ifndef CEP_INTERFACES_H_
-#define CEP_INTERFACES_H_
+#ifndef CEP_INTERFACES_IMPL_H_
+#define CEP_INTERFACES_IMPL_H_
 
 #include <vector>
 #include <string>
@@ -15,18 +15,18 @@
 #include <functional>
 
 namespace CompactExpressionParser {
-class ResultType { 
-  boost::variant<double, std::string> value_;
+template <typename T> class ResultType { 
+  boost::variant<T, std::string> value_;
 
  public:
   ResultType() {}
-  ResultType(double value) : value_(value) {}
+  ResultType(T value) : value_(value) {}
   ResultType(std::string const& value) : value_(value) {}
-  ResultType& operator= (double value) { value_ = value; return *this; }
+  ResultType& operator= (T value) { value_ = value; return *this; }
   ResultType& operator= (std::string const& value) { value_ = value; return *this; }
-  bool IsNumber() const { return nullptr != boost::get<double>(&value_); }
-  operator double () const { 
-    double const * pv = boost::get<double>(&value_);
+  bool IsNumber() const { return nullptr != boost::get<T>(&value_); }
+  operator T () const { 
+    T const * pv = boost::get<T>(&value_);
     return pv ? *pv : 0.;
   }
   operator std::string () const { 
@@ -35,7 +35,7 @@ class ResultType {
   }
 };
 
-typedef std::function< ResultType (const std::vector<ResultType>&) > UserFunctionType;
+template <typename T> using UserFunctionType = std::function< ResultType<T> (const std::vector< ResultType<T> >&) >;
 }  // namespace CompactExpressionParser
 
-#endif /* CEP_INTERFACES_H_ */
+#endif /* CEP_INTERFACES_IMPL_H_ */
