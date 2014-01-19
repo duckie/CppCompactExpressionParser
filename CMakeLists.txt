@@ -22,6 +22,9 @@ if(Boost_FOUND)
     endif(CMAKE_COMPILER_IS_GNUCXX)
 endif()
 
+# C++11
+list(APPEND CMAKE_CXX_FLAGS "-std=c++11")
+
 ### Common source files ###
 set(SOURCES_FILES CompactExpressionParser/Expression.cpp)
 

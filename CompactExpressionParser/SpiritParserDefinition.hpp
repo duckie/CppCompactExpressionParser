@@ -17,8 +17,6 @@
 #include <boost/spirit/include/phoenix_operator.hpp>
 #include <boost/spirit/include/phoenix_object.hpp>
 #include <boost/fusion/include/adapt_struct.hpp>
-#include <boost/foreach.hpp>
-#include <boost/function.hpp>
 #include <boost/variant.hpp>
 
 #include "Interfaces.h"
@@ -138,7 +136,7 @@ namespace CompactExpressionParser
 	ResultType ExpressionCalculator::operator()(const FunctionCall& iFunc) const
 	{
 		std::vector<ResultType> args;
-		BOOST_FOREACH(const ExpressionVar& e, iFunc.units) args.push_back(boost::apply_visitor(*this, e));
+		for(const ExpressionVar& e : iFunc.units) args.push_back(boost::apply_visitor(*this, e));
 		return iFunc.func(args);
 	}
 }

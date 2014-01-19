@@ -13,7 +13,7 @@
 #include <CompactExpressionParser/Expression.h>
 #include <boost/format.hpp>
 #include <boost/shared_ptr.hpp>
-#include <boost/ref.hpp>
+#include <functional>
 
 // Here are the definitions of user functions that will be used later
 using CompactExpressionParser::ResultType;
@@ -136,8 +136,8 @@ int main()
 		UserArg arg1;
 		UserArg arg2;
 		Expression exp;
-		exp.register_function("Arg1", boost::ref(arg1)); // Be sure to use a boost::ref so arg1 and arg2
-		exp.register_function("Arg2", boost::ref(arg2)); // can be modified AFTER compilation
+		exp.register_function("Arg1", std::ref(arg1)); // Be sure to use a boost::ref so arg1 and arg2
+		exp.register_function("Arg2", std::ref(arg2)); // can be modified AFTER compilation
 		exp.compile("4 + 3*Arg1() - Arg2()");
 		cep_example_output(index_example, exp() );
 
