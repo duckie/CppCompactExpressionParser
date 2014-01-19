@@ -10,8 +10,7 @@
 #define CEP_EXPRESSION_H_
 
 #include <string>
-#include <boost/shared_ptr.hpp>
-#include <boost/scoped_ptr.hpp>
+#include <memory>
 
 #include "Interfaces.h"
 
@@ -33,9 +32,9 @@ public:
 	bool register_function(const std::string& iName, UserFunctionType iFunc);
 
 private:
-	boost::shared_ptr< ExpGrammar<std::string::const_iterator> > m_grammar;
-	boost::shared_ptr< ExpressionCalculator > m_calculator;
-	boost::scoped_ptr< Unit > m_result;
+	std::shared_ptr< ExpGrammar<std::string::const_iterator> > m_grammar;
+	std::shared_ptr< ExpressionCalculator > m_calculator;
+	std::unique_ptr< Unit > m_result;
 	std::string::const_iterator m_iter, m_end;
 };
 
