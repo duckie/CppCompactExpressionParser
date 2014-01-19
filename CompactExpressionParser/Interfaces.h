@@ -19,20 +19,14 @@ class ResultType {
   boost::variant<double, std::string> value_;
 
  public:
-  ResultType() {}
-  ResultType(double value) : value_(value) {}
-  ResultType(std::string const& value) : value_(value) {}
-  ResultType& operator= (double value) { value_ = value; return *this; }
-  ResultType& operator= (std::string const& value) { value_ = value; return *this; }
-  bool IsNumber() const { return nullptr != boost::get<double>(&value_); }
-  operator double () const { 
-    double const * pv = boost::get<double>(&value_);
-    return pv ? *pv : 0.;
-  }
-  operator std::string () const { 
-    std::string const * pv = boost::get<std::string>(&value_);
-    return pv ? *pv : "";
-  }
+  ResultType();
+  ResultType(double value);
+  ResultType(std::string const& value);
+  ResultType& operator= (double value);
+  ResultType& operator= (std::string const& value);
+  bool IsNumber() const;
+  operator double () const;
+  operator std::string () const;
 };
 
 typedef std::function< ResultType (const std::vector<ResultType>&) > UserFunctionType;
